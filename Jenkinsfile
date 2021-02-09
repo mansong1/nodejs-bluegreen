@@ -11,6 +11,7 @@ def newState = 'blue'
 def version = ''
 
 openshift.withCluster() {
+  env.COLORLESS_APP_NAME = 'nodejs'
   env.APP_NAME = "nodejs-bluegreen"
   env.BUILD = openshift.project()
   env.DEV = "${APP_NAME}-dev"
@@ -66,20 +67,20 @@ pipeline {
           openshift.withCluster() {
             openshift.withProject(PROD) {
               def activeService = openshift.selector("route/${APP_NAME}").object().spec.to.name
-              if (activeService == "${APP_NAME}-blue") {
+              if (activeService == "${COLORLESS_APP_NAME}-blue") {
                 newState = 'green'
                 currentState = 'blue'
               }
-              def dc = openshift.selector("dc/${APP_NAME}-${newState}").object()
+              def dc = openshift.selector("dc/${COLORLESS_APP_NAME}-${newState}").object()
               def trigger_patch =  [
                 ["type":"ImageChange",
                  "imageChangeParams":[
                    "automatic": true,
-                   "containerNames": ["${APP_NAME}-${newState}"],
+                   "containerNames": ["${COLORLESS_APP_NAME}-${newState}"],
                    "from":[
                      "kind":"ImageStreamTag",
                      "namespace":PROD,
-                     "name":"${APP_NAME}-${newState}:${version}"
+                     "name":"${COLORLESS_APP_NAME}-${newState}:${version}"
                    ]
                  ]
                 ],
@@ -90,13 +91,19 @@ pipeline {
             }
           }
         }
-        tagImage(sourceImageName: APP_NAME, sourceImagePath: DEV, toImagePath: PROD, toImageName: "${APP_NAME}-${newState}", toImageTag: version)
+        tagImage(
+          sourceImageName: APP_NAME
+          , sourceImagePath: DEV
+          , toImagePath: PROD
+          , toImageName: "${COLORLESS_APP_NAME}-${newState}"
+          , toImageTag: version
+        )
       }
     }
     
     stage('Verify Deployment to Prod') {
       steps {
-        verifyDeployment(projectName: PROD, targetApp: "${APP_NAME}-${newState}")
+        verifyDeployment(projectName: PROD, targetApp: "${COLORLESS_APP_NAME}-${newState}")
       }
     }
     
@@ -107,7 +114,7 @@ pipeline {
           openshift.withCluster() {
             openshift.withProject(PROD) {
               def route = openshift.selector("route/${APP_NAME}").object()
-              route.spec.to.name = "${APP_NAME}-${newState}"
+              route.spec.to.name = "${COLORLESS_APP_NAME}-${newState}"
               openshift.apply(route)
             }
           }
