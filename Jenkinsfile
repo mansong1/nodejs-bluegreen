@@ -52,7 +52,7 @@ pipeline {
       steps {
         tagImage(sourceImageName: APP_NAME, sourceImagePath: BUILD, toImagePath: DEV)
         rollout([
-          projectName: DEV
+          projectName: DEV,
           resourceKindAndName: "deployment/${APP_NAME}",
           latest: false
         ])
