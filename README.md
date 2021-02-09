@@ -21,3 +21,7 @@ for the nodejs application.
 
 All of the OpenShift templates / objects are defined as YAML in this directory.
 The contents of this directory are applied via `setup.sh`.
+
+---
+
+This project is largely based off of https://github.com/redhat-cop/container-pipelines/tree/master/blue-green-spring
