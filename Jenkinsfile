@@ -11,7 +11,7 @@ def newState = 'blue'
 def version = ''
 
 openshift.withCluster() {
-  env.APP_NAME = "nodejs-blue-green"
+  env.APP_NAME = "nodejs-bluegreen"
   env.BUILD = openshift.project()
   env.DEV = "${APP_NAME}-dev"
   env.STAGE = "${APP_NAME}-stage"

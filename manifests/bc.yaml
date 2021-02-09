@@ -1,24 +1,22 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
- labels:
+  name: nodejs-bluegreen
+  labels:
     app: nodejs-bluegreen
     app.kubernetes.io/component: nodejs-bluegreen
     app.kubernetes.io/instance: nodejs-bluegreen
-  name: nodejs-bluegreen
 spec:
   failedBuildsHistoryLimit: 5
   output:
     to:
       kind: ImageStreamTag
       name: nodejs-bluegreen:latest
-  postCommit: {}
-  resources: {}
   runPolicy: Serial
   source:
     git:
       ref: master
-      uri: git@github.com:hhellbusch/nodejs-bluegreen.git
+      uri: https://github.com/hhellbusch/nodejs-bluegreen.git
     type: Git
   strategy:
     sourceStrategy:
