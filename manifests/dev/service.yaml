@@ -9,11 +9,11 @@ metadata:
   name: nodejs-bluegreen
 spec:
   ports:
-  - name: 8080-tcp
-    port: 8080
+  - name: 3000-tcp
+    port: 3000
     protocol: TCP
-    targetPort: 8080
+    targetPort: 3000
   selector:
-    deployment: nodejs-bluegreen
+    deploymentConfig: nodejs-bluegreen
   sessionAffinity: None
   type: ClusterIP

@@ -11,8 +11,11 @@ items:
     name: nodejs-bluegreen
     namespace: nodejs-bluegreen-dev
   spec:
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
     port:
-      targetPort: 8080-tcp
+      targetPort: 3000-tcp
     to:
       kind: Service
       name: nodejs-bluegreen
