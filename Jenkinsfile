@@ -25,13 +25,30 @@ pipeline {
   }
 
   stages {
-    stage('Test') {
+    stage('Build') {
       steps {
-        // git url: "${APPLICATION_SOURCE_REPO}", branch: "${APPLICATION_SOURCE_REF}"
         sh '''
         npm --version
-        npm install
         '''
+      }
+    }
+
+    stage('s2i - Build Container Image') {
+      steps {
+        openshift.withCluster() {
+          openshift.withProject(BUILD) {
+            echo "Attemping to start and follow 'buildconfig/${APP_NAME}' in ${openshift.project()}"
+            def buildConfig = openshift.selector('bc', APP_NAME)
+            def build       = buildConfig.startBuild('--wait')
+            build.logs('-f')
+          }
+        }
+      }
+    }
+
+    stage('Promote from Build to Dev') {
+      steps {
+        tagImage(sourceImageName: APP_NAME, sourceImagePath: BUILD, toImagePath: DEV)
       }
     }
   }
