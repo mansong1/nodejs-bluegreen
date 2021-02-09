@@ -17,6 +17,18 @@ Additionally, build configs for the application are placed here as well.
 One build config is for the jenkins pipeline job, and the other is a S2I (source to image)
 for the nodejs application.
 
+Dev only has a simple set-up for running one version of the application at a time.
+
+Prod has a complex deployment allowing for two versions of the application to run
+at the same time to enable a blue/green methodology. To achieve this, there is 
+DeploymentConfig, Route and Service for each color. The currently live color is
+selected by the colorless route.  The colorless route simply points to either
+the green route or the blue route.
+
+The image streams are created implicitly when we copy / promote them from 
+environment to environment.
+
+
 ```manifests/```
 
 All of the OpenShift templates / objects are defined as YAML in this directory.
