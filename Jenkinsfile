@@ -51,7 +51,18 @@ pipeline {
     stage('Promote from Build to Dev') {
       steps {
         tagImage(sourceImageName: APP_NAME, sourceImagePath: BUILD, toImagePath: DEV)
+        rollout([
+          projectName: DEV
+          resourceKindAndName: "deployment/${APP_NAME}",
+          latest: false
+        ])
       }
     }
+
+    // stage('Verify Deployment to Dev') {
+    //   steps {
+    //     verifyDeployment(projectName: DEV, targetApp: APP_NAME)
+    //   }
+    // }
   }
 }
