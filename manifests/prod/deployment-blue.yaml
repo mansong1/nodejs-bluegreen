@@ -1,0 +1,56 @@
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: nodejs-bluegreen
+    app.kubernetes.io/component: nodejs-bluegreen
+    app.kubernetes.io/instance: nodejs-bluegreen
+  name: nodejs-blue
+spec:
+  replicas: 1
+  selector:
+    deploymentConfig: nodejs-blue
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nodejs-bluegreen
+        deploymentConfig: nodejs-blue
+      name: nodejs-blue
+    spec:
+      containers:
+      - image: nodejs-blue
+        imagePullPolicy: Always
+        name: nodejs-blue
+        env:
+          - name: MY_DEPLOYMENT_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_COLOR
+            value: blue
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - curl -s 'http://localhost:3000'
+      terminationGracePeriodSeconds: 60
+  triggers:
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - nodejs-blue
+      from:
+        kind: ImageStreamTag
+        name: nodejs-blue:latest
+    type: ImageChange
+  - type: ConfigChange
+
+

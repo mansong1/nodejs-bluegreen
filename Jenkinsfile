@@ -51,17 +51,67 @@ pipeline {
     stage('Promote from Build to Dev') {
       steps {
         tagImage(sourceImageName: APP_NAME, sourceImagePath: BUILD, toImagePath: DEV)
-        // rollout([
-        //   projectName: DEV,
-        //   resourceKindAndName: "deployment/${APP_NAME}",
-        //   latest: false
-        // ])
       }
     }
 
     stage('Verify Deployment to Dev') {
       steps {
         verifyDeployment(projectName: DEV, targetApp: APP_NAME)
+      }
+    }
+
+    stage('Promote from Dev to Prod') {
+      steps {
+        script {
+          openshift.withCluster() {
+            openshift.withProject(PROD) {
+              def activeService = openshift.selector("route/${APP_NAME}").object().spec.to.name
+              if (activeService == "${APP_NAME}-blue") {
+                newState = 'green'
+                currentState = 'blue'
+              }
+              def dc = openshift.selector("dc/${APP_NAME}-${newState}").object()
+              def trigger_patch =  [
+                ["type":"ImageChange",
+                 "imageChangeParams":[
+                   "automatic": true,
+                   "containerNames": ["${APP_NAME}-${newState}"],
+                   "from":[
+                     "kind":"ImageStreamTag",
+                     "namespace":PROD,
+                     "name":"${APP_NAME}-${newState}:${version}"
+                   ]
+                 ]
+                ],
+                ["type":"ConfigChange"]
+              ]
+              dc.spec.triggers = trigger_patch
+              openshift.apply(dc)
+            }
+          }
+        }
+        tagImage(sourceImageName: APP_NAME, sourceImagePath: DEV, toImagePath: PROD, toImageName: "${APP_NAME}-${newState}", toImageTag: version)
+      }
+    }
+    
+    stage('Verify Deployment to Prod') {
+      steps {
+        verifyDeployment(projectName: PROD, targetApp: "${APP_NAME}-${newState}")
+      }
+    }
+    
+    stage('Switch route to new version') {
+      steps {
+        script {
+          input "Switch ${PROD} from ${currentState} to ${newState} deployment?"
+          openshift.withCluster() {
+            openshift.withProject(PROD) {
+              def route = openshift.selector("route/${APP_NAME}").object()
+              route.spec.to.name = "${APP_NAME}-${newState}"
+              openshift.apply(route)
+            }
+          }
+        }
       }
     }
   }

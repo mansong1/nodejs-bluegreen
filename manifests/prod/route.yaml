@@ -9,15 +9,12 @@ items:
       app.kubernetes.io/component: nodejs-bluegreen
       app.kubernetes.io/instance: nodejs-bluegreen
     name: nodejs-bluegreen
+    annotations:
+      description: Current live route for application's http service.
   spec:
     tls:
       termination: edge
       insecureEdgeTerminationPolicy: Redirect
-    port:
-      targetPort: 3000-tcp
     to:
-      kind: Service
-      name: nodejs-bluegreen
-      weight: 100
-    wildcardPolicy: None
+      name: nodejs-blue
 kind: List

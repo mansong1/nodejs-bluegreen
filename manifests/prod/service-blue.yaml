@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nodejs-blue
+    app.kubernetes.io/component: nodejs-blue
+    app.kubernetes.io/instance: nodejs-blue
+  name: nodejs-blue
+spec:
+  ports:
+  - name: 3000-tcp
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    deploymentConfig: nodejs-blue
+  sessionAffinity: None
+  type: ClusterIP

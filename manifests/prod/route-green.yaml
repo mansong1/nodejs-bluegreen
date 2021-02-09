@@ -5,10 +5,10 @@ items:
   kind: Route
   metadata:
     labels:
-      app: nodejs-bluegreen
-      app.kubernetes.io/component: nodejs-bluegreen
-      app.kubernetes.io/instance: nodejs-bluegreen
-    name: nodejs-bluegreen
+      app: nodejs-green
+      app.kubernetes.io/component: nodejs-green
+      app.kubernetes.io/instance: nodejs-green
+    name: nodejs-green
   spec:
     tls:
       termination: edge
@@ -17,7 +17,7 @@ items:
       targetPort: 3000-tcp
     to:
       kind: Service
-      name: nodejs-bluegreen
+      name: nodejs-green
       weight: 100
     wildcardPolicy: None
 kind: List

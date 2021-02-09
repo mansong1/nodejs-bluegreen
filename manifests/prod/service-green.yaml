@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nodejs-green
+    app.kubernetes.io/component: nodejs-green
+    app.kubernetes.io/instance: nodejs-green
+  name: nodejs-green
+spec:
+  ports:
+  - name: 3000-tcp
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    deploymentConfig: nodejs-green
+  sessionAffinity: None
+  type: ClusterIP
