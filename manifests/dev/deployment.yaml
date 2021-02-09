@@ -24,6 +24,13 @@ spec:
       - image: nodejs-bluegreen
         imagePullPolicy: Always
         name: nodejs-bluegreen
+        env:
+          - name: MY_DEPLOYMENT_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_COLOR
+            value: bluegreen
         ports:
         - containerPort: 3000
           name: http
