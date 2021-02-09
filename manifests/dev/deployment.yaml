@@ -1,6 +1,6 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
 metadata:
   labels:
     app: nodejs-bluegreen
@@ -8,34 +8,42 @@ metadata:
     app.kubernetes.io/instance: nodejs-bluegreen
   name: nodejs-bluegreen
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
-    matchLabels:
-      deployment: nodejs-bluegreen
+    deploymentConfig: nodejs-bluegreen
   strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
-        deployment: nodejs-bluegreen
+        app: nodejs-bluegreen
+        deploymentConfig: nodejs-bluegreen
+      name: nodejs-bluegreen
     spec:
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/nodejs-bluegreen-dev/nodejs-bluegreen:latest
-        imagePullPolicy: IfNotPresent
+      - image: nodejs-bluegreen
+        imagePullPolicy: Always
         name: nodejs-bluegreen
         ports:
-        - containerPort: 8080
+        - containerPort: 3000
+          name: http
           protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - curl -s 'http://localhost:3000'
+      terminationGracePeriodSeconds: 60
+  triggers:
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - nodejs-bluegreen
+      from:
+        kind: ImageStreamTag
+        name: nodejs-bluegreen:latest
+    type: ImageChange
+  - type: ConfigChange
+
+
